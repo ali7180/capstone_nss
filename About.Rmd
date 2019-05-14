@@ -38,7 +38,7 @@ Introduction  {.storyboard}
 
 ```{r}
 
-knitr::include_graphics('./school_safety.png')
+knitr::include_graphics('./images/school_safety.png')
 
 
 ```
@@ -50,7 +50,7 @@ Source: http://blogs.edweek.org/edweek/campaign-k-12/2018/12/trump-safety-commis
 
 ```{r}
 
-knitr::include_graphics('./gunsteachers.jpeg')
+knitr::include_graphics('./images/gunsteachers.jpeg')
 
 ```
 
@@ -62,7 +62,7 @@ Source: http://time.com/5493005/safety-report-florida-schools-parkland/
 
 ```{r}
 
-knitr::include_graphics('./MSD.png')
+knitr::include_graphics('./images/MSD.png')
 
 ```
 
@@ -72,7 +72,7 @@ Source: http://time.com/5493005/safety-report-florida-schools-parkland/
 
 
 ```{r}
-knitr::include_graphics('./Screen Shot 2019-05-05 at 11.52.45 AM.png')
+knitr::include_graphics('./images/Screen Shot 2019-05-05 at 11.52.45 AM.png')
 
 ```
 
@@ -208,7 +208,7 @@ Row
 
 
 
-knitr::include_graphics('./ECS.png')
+knitr::include_graphics('./images/ECS.png')
 
 
 
