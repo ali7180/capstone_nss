@@ -1,0 +1,614 @@
+ http://time.com/5493005/safety-report-florida-schools-parkland/---
+title: "How has School Safety Shifted Since Parkland?"
+
+  
+output: 
+  flexdashboard::flex_dashboard:
+    theme: flatly
+    social: embed
+
+
+
+---
+
+```{r setup, include = FALSE}
+
+library(flexdashboard)
+library(shiny)
+library(jsonlite)
+library(maptools)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(purrr)
+library(leaflet)
+library(plotly)
+library(highcharter)
+library(readxl)
+library(tufte)
+library(tidyverse)
+library(waffle)
+
+```
+
+Introduction  {.storyboard} 
+===================================== 
+
+
+### Summary
+
+```{r}
+
+knitr::include_graphics('./school_safety.png')
+
+
+```
+
+***
+Source: http://blogs.edweek.org/edweek/campaign-k-12/2018/12/trump-safety-commission-devos-guidance-guns.html
+
+### Motivation
+
+```{r}
+
+knitr::include_graphics('./MSD.png')
+
+```
+
+***
+Source: http://time.com/5493005/safety-report-florida-schools-parkland/
+
+
+
+### Question
+
+```{r}
+knitr::include_graphics('./Screen Shot 2019-05-05 at 11.52.45 AM.png')
+
+```
+
+***
+Source: http://time.com/5493005/safety-report-florida-schools-parkland/ zaq   1
+
+Shootings Overtime  {.storyboard} 
+===================================== 
+
+### School Shootings from 1970 - Present
+
+```{r}
+
+
+school_shooting <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/schoolshootings.RDS')
+
+school_shooting$date<- as.Date(school_shooting$date, "%m/%d/%Y")
+set.seed(1234)
+
+n <- 238
+z <-  sample(1:n)
+sequences <- map2(1:n, z, function(x, y){ ifelse(x == 1:n, y,0) })
+df2 <- data_frame(
+  lat = school_shooting$lat,
+  lon = school_shooting$long,
+  z = school_shooting$date,
+  color = colorize(z),
+  sequence = sequences,
+  name = school_shooting$school_name
+)
+
+us_map <- hcmap("countries/us/us-all") %>% 
+  hc_add_series(data = df2, type = "mapbubble", name = "schools", 
+                minSize = 0, maxSize = 30) %>% 
+  hc_motion(enabled = TRUE, series = 1, 
+            loop = TRUE, autoPlay = TRUE, 
+            updateInterval = 1000, magnet = list(step =  1)) %>% 
+  hc_plotOptions(series = list(showInLegend = FALSE))
+us_map <- us_map %>% hc_add_theme(hc_theme_chalk())
+
+us_map
+
+
+```
+
+***
+
+
+There have been 238 schoool shootings since Columbine. 
+
+Out of the 437 casualties - there have been 143 killed in the school shootings Columbine. 
+
+Of those shootings - 84 of those schools had school resource officers. Of the schools that have sro, there were 75 deaths that resulted from those specific schools.  `
+
+The database compiles information from more than
+25 different sources including peer-reviewed studies,
+government reports, mainstream media, non-profits,
+private websites, blogs, and crowd-sourced lists that
+have been analyzed, filtered, deconflicted, and crossreferenced for accuracy. 
+
+*** 
+
+
+### Shooting Statistics
+
+
+```{r}
+
+schoolshooting_timeoverview <-readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/k12schoolshooting.RDS')
+
+g <- ggplot(schoolshooting_timeoverview, aes(x= Total.Injured.Killed.Victims, y = Category)) + geom_boxplot( fill="plum") + theme(axis.text.x = element_text(angle=75, vjust=0.6)) +
+    labs(title="School Shooting Category ", 
+         subtitle="`",
+         caption="Source: https://www.chds.us/ssdb/",
+         x="Total Injured",
+         y="Shooting Victim") 
+
+g
+
+
+```
+
+
+### Total Injured Overtime by Weapon 
+
+```{r}
+
+schoolshooting_timeoverview <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/k12schoolshooting.RDS')
+schoolshooting_timeoverview$Date<- as.Date(schoolshooting_timeoverview$Date, "%m/%d/%y")
+schoolshooting_timeoverview$Firearm.Type[schoolshooting_timeoverview$Firearm.Type == "Multiple Handguns"] <- "Handgun"
+schoolshooting_timeoverview$Firearm.Type[schoolshooting_timeoverview$Firearm.Type == "Multiple Rifles"] <- "Rifle"
+schoolshooting_timeoverview$Firearm.Type[schoolshooting_timeoverview$Firearm.Type == "Rifle "] <- "Rifle"
+
+timeline_shooting <- schoolshooting_timeoverview %>% hchart(type = "area", hcaes(x=Date, y= Total.Injured.Killed.Victims, group = Firearm.Type)) %>%
+   hc_title(text = "School Shooting Casualties by Weapon") %>%
+  hc_subtitle(text = "Source: Center for Homeland Defense and Security")
+
+
+timeline_shooting
+
+
+```
+
+*** 
+
+
+
+### School Shooting Casualties by Weapon
+
+```{r}
+
+schoolshooting_timeoverview <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/k12schoolshooting.RDS')
+schoolshooting_timeoverview$Firearm.Type[schoolshooting_timeoverview$Firearm.Type == "Multiple Handguns"] <- "Handgun"
+schoolshooting_timeoverview$Firearm.Type[schoolshooting_timeoverview$Firearm.Type == "Multiple Rifles"] <- "Rifle"
+schoolshooting_timeoverview$Firearm.Type[schoolshooting_timeoverview$Firearm.Type == "Rifle "] <- "Rifle"
+
+
+timeline_shooting_bycal <- schoolshooting_timeoverview %>% hchart(type = "column", hcaes(x=Firearm.Type, y= Number.of.Shots.Fired, group = Firearm.Type)) %>%
+   hc_title(text = "Number of Rounds Fired by Firearm Type") %>%
+  hc_subtitle(text = "Source: Center for Homeland Defense and Security")
+
+
+timeline_shooting_bycal
+
+```
+
+*** 
+
+The highest count of shot fired derives from shooters that use a combination of different weapons, followed by a rifle. 
+The limitations for this data would be that the type of firearm listed was not provided. -different type of of a particular firemarm can shot more rounds-
+
+### Casualites correlated to the Number of Shots Fired by Firearm Type 
+
+```{r}
+library(gganimate)
+schoolshooting_timeoverview$Date<- as.Date(schoolshooting_timeoverview$Date, "%m/%d/%y")
+p <- ggplot(
+  schoolshooting_timeoverview, 
+  aes(x = Number.of.Shots.Fired, y= Total.Injured.Killed.Victims, colour = Firearm.Type)
+) +
+  geom_point(show.legend = FALSE, alpha = 0.7) +
+  scale_color_viridis_d() +
+  scale_x_log10() +
+  labs(x = " Number of Shots Fired", y = "Total Casualties")
+
+p <-p + facet_wrap(~Firearm.Type) 
+
+p <- p + ggtitle("Number of Casualites by Shots Fired Grouped by Firearm Type")
+
+p
+```
+
+
+
+School Safety Measures 
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### 
+
+```{r}
+
+
+
+knitr::include_graphics('./ECS.png')
+
+
+
+
+
+```
+
+### School Resoruce Officers: 35 out of 51 State Education Agencies mandate Certification for SROs
+
+```{r}
+
+y <-waffle(c(no = 35, yes = 16), rows = 5,  
+           colors = c("#c7d4b6", "#a3aabd"), title = "Certification Requirements for School Resource Officers")
+
+y
+
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Concealed Carry Weapon: 40 out of 51 State Education Agencies 
+
+```{r}
+
+t <-waffle(c(no = 40, yes = 11), rows = 5,  
+       colors = c("#c7d4b6", "#a3aabd"), title = "Concealed Carry Permit ")
+
+t
+
+
+```
+
+### School Safety Plan: 44 of 51 State Education Agencies mandate Safety School Plans
+
+```{r}
+
+
+l <-waffle(c(no = 7, yes = 44), rows = 5,  
+           colors = c("#c7d4b6", "#a3aabd"), title = "Safety School Plans ")
+l
+
+
+
+```
+
+Florida
+=====================================
+
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+
+### Sales Forecast
+
+```{r}
+
+florida <- filter(school_shooting, state == "Florida")
+florida$date<- as.Date(florida$date, "%m/%d/%Y")
+
+n <- 18
+z <-  sample(1:n)
+sequences <- map2(1:n, z, function(x, y){ ifelse(x == 1:n, y, 0) })
+df <- data_frame(
+  lat = florida$lat,
+  lon = florida$long,
+  z = florida$date,
+  color = colorize(z),
+  sequence = sequences,
+  name = florida$school_name
+)
+
+fl_map <- hcmap("countries/us/us-fl-all") %>% 
+  hc_add_series(data = df, type = "mapbubble", name = "schools", 
+                minSize = 0, maxSize = 30) %>% 
+  hc_motion(enabled = TRUE, series = 1, labels = 1:n,
+            loop = TRUE, autoPlay = TRUE, 
+            updateInterval = 1000, magnet = list(step =  1)) %>% 
+  hc_plotOptions(series = list(showInLegend = FALSE))
+fl_map <- fl_map %>% hc_add_theme(hc_theme_handdrawn())
+
+fl_map
+```
+
+### Sales by State
+
+```{r}
+
+schoolshooting_timeoverview <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/k12schoolshooting.RDS')
+schoolshooting_timeoverview <- filter(schoolshooting_timeoverview, State == "FL")
+ g<- schoolshooting_timeoverview%>%
+   count(Category)%>%
+   arrange(n)%>%
+   hchart(type = "column", hcaes(x = Category, y = n))
+ 
+ g
+
+```
+
+Column {.tabset data-width=400}
+-----------------------------------------------------------------------
+
+### Gun Laws Overtime 
+
+
+```{r, fig.keep='none'}
+
+## you might need to filter this down to the count by the most recent year 
+
+guncodesfl <- read_csv("/Users/aliciaortiz/Documents/capstone_ortiz/data/guncodesfl.csv")
+ mp <- hchart(guncodesfl, "treemap", hcaes(x = Category, value = gunvalues, color = gunvalues))
+
+ mp
+ 
+```
+
+### Shooting Categories
+
+```{r}
+
+guncodefl_category <- read_csv('/Users/aliciaortiz/Documents/capstone_ortiz/data/flguncodes_bycategory.csv')
+
+guncodefl_category <- spread(guncodefl_category, "Category", "gunvalues")
+hc <- highchart() %>% 
+  hc_xAxis(categories = guncodefl_category$year) %>% 
+  hc_add_series(name = "Mental Health", type = "area",data = guncodefl_category$`Assault weapons and large-capacity magazines`) %>% 
+  hc_add_series(name = "Buyer Resultation", type = "area",data = guncodefl_category$`Buyer regulations`) %>%
+  hc_add_series(name = "Concealed Carry", type = "area",data = guncodefl_category$`Concealed carry permitting`) %>% 
+  hc_add_series(name = "Domestic Violence", type = "area", data = guncodefl_category$`Domestic violence`) %>%
+  hc_add_series(name = "Immunity", type = "area", data = guncodefl_category$Immunity) %>%
+  hc_add_series(name = "Preemption", type = "area", data = guncodefl_category$Preemption) %>%
+  hc_add_series(name = "Stand your Ground",type = "area", data = guncodefl_category$`Stand your ground`) %>%
+  hc_add_series(name = "Ammunition Regulations", type = "area", data = guncodefl_category$`Ammunition regulations`) %>%
+  hc_add_series(name = "Backgroup Checks",type = "area", data = guncodefl_category$`Background checks`) %>%
+  hc_add_series(name = "Child Access",type = "area", data = guncodefl_category$`Child access prevention`) %>%
+  hc_add_series(name = "Dealer Regulations", type = "area",data = guncodefl_category$`Dealer regulations`) %>%
+  hc_add_series(name = "Gun Trafficking", type = "area", data = guncodefl_category$`Gun trafficking`) %>%
+  hc_add_series(name = "Possession", type = "area",data = guncodefl_category$`Possession regulations`) %>%
+  hc_add_series(name = "Prohibition", type = "area",data = guncodefl_category$`Prohibitions for high-risk gun possession`)
+
+
+hc
+```
+
+
+
+
+
+Florida Policy Analysis 
+===================================== 
+
+Column {data-width=800}
+-----------------------------------------------------------------------
+
+### Sales Forecast
+
+```{r}
+school_shooting <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/schoolshootings.RDS')
+florida <- filter(school_shooting, state == "Florida")
+florida$date<- as.Date(florida$date, "%m/%d/%Y")
+
+florida_test <- hchart(florida, "line", hcaes(x = date, y = casualties, name = florida$school_name),
+                       color = c("#e5b13a", "#4bd5ee", "#4AA942", "#FAFAFA")) %>% 
+  hc_title(
+    text = "School Safety Policies in Relation to Shootings in <span style=\"color:#e5b13a\"> Florida</span> ",
+    useHTML = TRUE)
+
+laws <-read_csv('/Users/aliciaortiz/Documents/capstone/data/fl_laws.csv')
+laws <- laws %>% filter(!is.na(`Signed into law`))
+laws$`Signed into law`<- as.Date(laws$`Signed into law`, "%m/%d/%y")
+
+laws <- arrange(laws, `Signed into law`)
+
+data_flags3 <- data_frame(
+  date = laws$`Signed into law`,
+  title = "Law",
+  text = sprintf("Law: %s in %s",  laws$Bill, laws$Description)
+)
+
+data_flags3 <- arrange(data_flags3,date)
+
+
+fl_policy_timeseries <- florida_test %>% 
+  hc_add_series(data_flags3, hcaes(x = date),
+                type = "flags")
+
+
+fl_policy_timeseries <- fl_policy_timeseries %>% hc_add_theme(hc_theme_flatdark()) 
+
+fl_policy_timeseries
+
+```
+
+
+Florida Policies
+=====================================
+
+```{r}
+
+library(knitr)
+kable(laws, caption = "Florida Safety Policies")
+
+
+```
+
+Colorado 
+=====================================
+
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+
+### Sales Forecast
+
+```{r}
+
+
+
+
+data("USArrests", package = "datasets")
+data("usgeojson")
+
+USArrests <- USArrests %>%
+  mutate(state = rownames(.))
+
+
+school_shooting <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/schoolshootings.RDS')
+colorado <- filter(school_shooting, state == "Colorado")
+#colorado$date<- as.Date(colorado$date, "%m/%d/%Y")
+
+n <- 5
+z <-  sample(1:n)
+sequences <- map2(1:n, z, function(x, y){ ifelse(x == 1:n, y, 0) })
+df <- data_frame(
+  lat = colorado$lat,
+  lon = colorado$long,
+  z = colorado$date,
+  color = colorize(z),
+  sequence = sequences,
+  name = colorado$school_name
+)
+
+co_map <- hcmap("countries/us/us-co-all") %>% 
+  hc_add_series(data = df, type = "mapbubble", name = "schools", 
+                minSize = 0, maxSize = 30) %>% 
+  hc_motion(enabled = TRUE, series = 1, labels = 1:n,
+            loop = TRUE, autoPlay = TRUE, 
+            updateInterval = 1000, magnet = list(step =  1)) %>% 
+  hc_plotOptions(series = list(showInLegend = FALSE))
+co_map <- co_map %>% hc_add_theme(hc_theme_handdrawn())
+
+co_map
+
+
+```
+
+### Sales by State
+
+```{r}
+
+schoolshooting_timeoverview <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/k12schoolshooting.RDS')
+schoolshooting_timeoverview <- filter(schoolshooting_timeoverview, State == "CO")
+ g<- schoolshooting_timeoverview%>%
+   count(Category)%>%
+   arrange(n)%>%
+   hchart(type = "column", hcaes(x = Category, y = n))
+ 
+ g
+
+```
+
+*** 
+test 
+
+Column {.tabset data-width=400}
+-----------------------------------------------------------------------
+
+### Gun Laws Overtime 
+
+
+```{r, fig.keep='none'}
+
+## you might need to filter this down to the count by the most recent year 
+
+guncodesfl <- read_csv("/Users/aliciaortiz/Documents/capstone_ortiz/data/guncodesco.csv")
+ mp <- hchart(guncodesfl, "treemap", hcaes(x = Category, value = gunvalues, color = gunvalues))
+
+ mp
+ 
+```
+
+### Shooting Categories
+
+```{r}
+
+guncodefl_category <- read_csv('/Users/aliciaortiz/Documents/capstone_ortiz/data/guncodesco_bycategory.csv')
+
+guncodefl_category <- spread(guncodefl_category, "Category", "gunvalues")
+hc <- highchart() %>% 
+  hc_xAxis(categories = guncodefl_category$year) %>% 
+  hc_add_series(name = "Mental Health", type = "area",data = guncodefl_category$`Assault weapons and large-capacity magazines`) %>% 
+  hc_add_series(name = "Buyer Resultation", type = "area",data = guncodefl_category$`Buyer regulations`) %>%
+  hc_add_series(name = "Concealed Carry", type = "area",data = guncodefl_category$`Concealed carry permitting`) %>% 
+  hc_add_series(name = "Domestic Violence", type = "area", data = guncodefl_category$`Domestic violence`) %>%
+  hc_add_series(name = "Immunity", type = "area", data = guncodefl_category$Immunity) %>%
+  hc_add_series(name = "Preemption", type = "area", data = guncodefl_category$Preemption) %>%
+  hc_add_series(name = "Stand your Ground",type = "area", data = guncodefl_category$`Stand your ground`) %>%
+  hc_add_series(name = "Ammunition Regulations", type = "area", data = guncodefl_category$`Ammunition regulations`) %>%
+  hc_add_series(name = "Backgroup Checks",type = "area", data = guncodefl_category$`Background checks`) %>%
+  hc_add_series(name = "Child Access",type = "area", data = guncodefl_category$`Child access prevention`) %>%
+  hc_add_series(name = "Dealer Regulations", type = "area",data = guncodefl_category$`Dealer regulations`) %>%
+  hc_add_series(name = "Gun Trafficking", type = "area", data = guncodefl_category$`Gun trafficking`) %>%
+  hc_add_series(name = "Possession", type = "area",data = guncodefl_category$`Possession regulations`) %>%
+  hc_add_series(name = "Prohibition", type = "area",data = guncodefl_category$`Prohibitions for high-risk gun possession`)
+
+
+hc
+```
+
+
+
+
+
+Colorado Policy Analysis 
+===================================== 
+
+Column {data-width=800}
+-----------------------------------------------------------------------
+
+### Sales Forecast
+
+```{r}
+school_shooting <- readRDS('/Users/aliciaortiz/Documents/capstone_ortiz/data/schoolshootings.RDS')
+colorado <- filter(school_shooting, state == "Colorado")
+colorado$date<- as.Date(colorado$date, "%m/%d/%Y")
+
+colorado_test <- hchart(colorado, "line", hcaes(x = date, y = casualties, name = colorado$school_name),
+                       color = c("#e5b13a", "#4bd5ee", "#4AA942", "#FAFAFA")) %>% 
+  hc_title(
+    text = "School Saftey Policies in Relation to Shootings in <span style=\"color:#e5b13a\"> Colorado</span> ",
+    useHTML = TRUE)
+
+colaws <- read_csv("/Users/aliciaortiz/Documents/capstone/data/co_laws.csv")
+colaws <- colaws %>% filter(!is.na(`Signed into law`))
+colaws$`Signed into law`<- as.Date(colaws$`Signed into law`, "%m/%d/%y")
+
+colaws <- arrange(colaws, `Signed into law`)
+
+data_flags3 <- data_frame(
+  date = laws$`Signed into law`,
+  title = "Law",
+  text = sprintf("Law: %s in %s",  laws$Bill, laws$Description)
+)
+
+data_flags3 <- arrange(data_flags3,date)
+
+
+co_policy_timeseries <- colorado_test %>% 
+  hc_add_series(data_flags3, hcaes(date),
+                type = "flags") 
+
+co_policy_timeseries <- co_policy_timeseries %>% hc_add_theme(hc_theme_flatdark()) 
+
+co_policy_timeseries
+
+```
+`
+
+
+
+Colorado Policies
+=====================================
+
+```{r}
+
+library(knitr)
+kable(colaws, caption = "Colorado Safety Policies")
+
+
+```
+
