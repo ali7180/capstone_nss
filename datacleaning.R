@@ -54,14 +54,7 @@ saveRDS(florida_data, '/Users/aliciaortiz/Documents/capstone_ortiz/data/florida_
 
 #count which day of the week it occured the most 
 dayofweek <-ggplot(data=school_shooting, aes(x=day_of_week)) +
-  geom_bar() +
-  geom_text(stat='count', aes(label=..count..), vjust=-1)
-
-#daysoftheweek - 
-a <- ggplot( data = school_shooting, aes (x= state, y= casualties)) + 
-  geom_point(aes(color = shooting_type),alpha = 0.5)
-
-a + scale_color_hue(guide = FALSE)
+a
 
 #Casulties over the years 
 
